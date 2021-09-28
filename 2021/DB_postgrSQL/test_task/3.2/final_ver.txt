@@ -1,0 +1,25 @@
+SELECT full_name,	sub,
+	   avg_mark
+  FROM ((	 -- Находим среднюю оценку по каждому предмету каждого ученика 
+	    	 -- и присваиваем НАИЛУЧШЕЙ оценке, отсортированной по алфавиту, - 1 в столбце 'rn'
+	  	 SELECT full_name, sub, 
+				AVG(mark) AS avg_mark,
+				ROW_NUMBER() OVER(PARTITION BY full_name  ORDER BY AVG(mark) DESC, sub) AS rn
+		   FROM names 
+	   	  GROUP BY full_name, sub
+	   	  ORDER BY	full_name, AVG(mark) DESC, sub
+		)
+		
+		  UNION ALL
+		
+		(	 -- Находим среднюю оценку по каждому предмету каждого ученика 
+	    	 -- и присваиваем НАИХУДШЕЙ оценке, отсортированной по алфавиту, - 1 в столбце 'rn'
+		 SELECT full_name, sub,
+				AVG(mark) AS avg_mark,
+				ROW_NUMBER() OVER(PARTITION BY full_name  ORDER BY AVG(mark) ASC, sub) AS rn
+		   FROM names 
+	   	  GROUP BY full_name, sub
+	   	  ORDER BY	full_name, AVG(mark) DESC, sub
+		)) AS subquery
+  WHERE subquery.RN=1
+  ORDER BY full_name, avg_mark

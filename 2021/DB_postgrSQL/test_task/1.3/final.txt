@@ -1,0 +1,15 @@
+
+SELECT id_card
+  FROM (SELECT id_card, birth_date , 		-- подзапрос выводит табличку с подсчётом кол-ва книг за последний месяц
+			   COUNT(id_copy) as c_id,		-- в столбце 'rn' присваивается ранк по убыванию кол-ва книг с учетом возраста
+			   RANK() OVER(ORDER BY COUNT(id_copy) DESC, birth_date DESC) AS rn
+		  FROM readers rdr 					-- объединяем таблицы
+			   JOIN delievery dlvr ON
+			   dlvr.id_card=rdr.id_card
+		 WHERE EXTRACT(month from date_out) = EXTRACT(month from CURRENT_DATE)   -- условие последнего месяца
+	  		   AND EXTRACT(year from date_out) EXTRACT(year from CURRENT_DATE)
+		 GROUP BY id_card, birth_date
+	 	 ORDER BY COUNT(id_copy) DESC,
+			   birth_date DESC
+	   ) as subquery
+WHERE rn='1'								

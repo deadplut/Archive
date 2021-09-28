@@ -1,0 +1,9 @@
+
+SELECT city 
+  FROM (SELECT city, COUNT(id_book), -- подзапрос присваивает ранк каждому городу по убыванию количества книг
+			   RANK() OVER(ORDER BY COUNT(id_book) DESC)
+		  FROM books
+		 WHERE year_publish = '2016' -- условие с годом публикации
+		 GROUP BY city
+		HAVING COUNT(id_book)=1
+	   ) as subquery

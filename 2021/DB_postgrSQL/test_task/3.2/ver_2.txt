@@ -1,0 +1,38 @@
+-- Находим средние оценки по каждому предмету для каждого ученика
+WITH subq_avg_mark(fio, sub, avg_mark) AS (
+SELECT
+	fio,
+	sub, 
+	AVG(mark)
+FROM 
+	names 
+GROUP BY 
+	fio,
+	sub
+)
+
+
+-- Выведим фио и предмет с наименьшей средней оценкой у ученика
+SELECT
+*
+FROM 
+	(SELECT
+	 	fio,
+	 	sub,
+	 	avg_mark,
+	 -- создаём столбец, который присваивает предмету каждого ученика свой номер по порядку,
+	 -- предметы отсортированы у каждого ученика по алфавиту
+	 	ROW_NUMBER() OVER(PARTITION BY fio ORDER BY avg_mark DESC) AS RN 
+	 FROM 
+		 	(--подзапрос создает столбец "avg_mark_1" с наибольшей отметкой каждого ученика 
+			SELECT  
+			 	DISTINCT fio, sub, avg_mark, 
+				-- создаём столбец при помощии ф-ции LAST_VALUE для выбора наилучшей оценки отсортируем по 'avg_mark ASC'
+			 	LAST_VALUE(avg_mark) OVER (PARTITION BY fio ORDER BY avg_mark DESC
+											   RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS "avg_mark_1"
+				
+			FROM subq_avg_mark -- данные из subq_avg_mark 
+			ORDER BY sub) as lvl_1
+	WHERE avg_mark=avg_mark_1 
+	)AS lvl_2
+WHERE RN=1 --из подзапроса lvl_2 оставим те строки, в которых RN ==1

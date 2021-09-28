@@ -1,0 +1,14 @@
+WITH sub(fio, sub, avg_mark) AS (
+SELECT fio, sub, AVG(mark) FROM names GROUP BY fio, sub)
+
+SELECT  DISTINCT sub.fio, LAST_VALUE(sub.avg_mark) 
+OVER (PARTITION BY fio ORDER BY avg_mark DESC
+      RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+      AS "avg_mark"
+FROM sub
+UNION
+SELECT  DISTINCT sub.fio, LAST_VALUE(sub.avg_mark) 
+OVER (PARTITION BY fio ORDER BY avg_mark ASC
+      RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+      AS "avg_mark"
+FROM sub

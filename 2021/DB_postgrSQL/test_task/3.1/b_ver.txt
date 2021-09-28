@@ -1,0 +1,7 @@
+SELECT DISTINCT fio, avg(mark) as avg_mark
+FROM (select fio, sub, mark, date from date join names on names.id=date.id) t
+GROUP BY fio
+HAVING avg(mark)>4.5
+AND fio NOT IN (SELECT fio from (select fio, sub, mark, date from date join names on names.id=date.id) t
+		   WHERE EXTRACT (year from date)=extract(year from CURRENT_DATE) and mark = '2'
+		   GROUP BY fio, date)

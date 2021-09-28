@@ -1,0 +1,2 @@
+
+SELECT fio, sub, AVG(mark) FROM names GROUP BY fio, sub ORDER BY fio, sub

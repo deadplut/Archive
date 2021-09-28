@@ -1,0 +1,65 @@
+-- Create a table called NAMES */
+CREATE TABLE NAMES( fio text, sub text, mark real);
+
+-- Create few records in this table */
+INSERT INTO NAMES VALUES('Tom','math', 5);
+INSERT INTO NAMES VALUES('Tom', 'math', 5);
+INSERT INTO NAMES VALUES('Tom', 'rus', 2);
+INSERT INTO NAMES VALUES('Tom', 'rus', 3);
+INSERT INTO NAMES VALUES('Tom', 'pe', 4);
+INSERT INTO NAMES VALUES('Lucy', 'math', 1);
+INSERT INTO NAMES VALUES('Lucy', 'math', 1);
+INSERT INTO NAMES VALUES('Lucy', 'rus', 5);
+INSERT INTO NAMES VALUES('Lucy', 'rus', 5);
+INSERT INTO NAMES VALUES('Lucy', 'pe', 5);
+INSERT INTO NAMES VALUES('Frank', 'math', 1);
+INSERT INTO NAMES VALUES('Frank', 'math', 1);
+INSERT INTO NAMES VALUES('Frank', 'rus', 5);
+INSERT INTO NAMES VALUES('Frank', 'rus', 5);
+INSERT INTO NAMES VALUES('Frank', 'pe', 5);
+COMMIT;
+
+
+
+-- Находим средние оценки по каждому предмету для каждого ученика
+WITH subq_avg_mark(fio, sub, avg_mark) AS (
+SELECT
+	fio,
+	sub, 
+	AVG(mark)
+FROM 
+	names 
+GROUP BY 
+	fio,
+	sub
+)
+
+
+-- Выведим фио и предмет с наименьшей средней оценкой у ученика
+SELECT
+*
+FROM 
+	(SELECT
+	 	fio,
+	 	sub,
+	 	avg_mark,
+	 	ROW_NUMBER() OVER(PARTITION BY fio ORDER BY avg_mark DESC) AS RN 
+	 FROM 
+	 	(-- подзапрос сравнивает столбец "avg_mark_1" с avg_mark, и оставляет совпадения
+		SELECT
+		 	fio, sub, avg_mark 
+		FROM
+		 	(--подзапрос создает столбец "avg_mark_1" с наибольшей отметкой каждого ученика 
+			SELECT  
+			 	DISTINCT fio, sub, avg_mark, 
+			 	LAST_VALUE(avg_mark) OVER (PARTITION BY fio ORDER BY avg_mark ASC
+											   RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS "avg_mark_1"
+			FROM subq_avg_mark) as lvl_0
+		WHERE avg_mark=avg_mark_1 
+		ORDER BY sub
+		) AS lvl2
+	)AS T
+WHERE RN=1
+
+
+

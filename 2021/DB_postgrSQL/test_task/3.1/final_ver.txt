@@ -1,0 +1,9 @@
+SELECT DISTINCT full_name
+  FROM names
+ GROUP BY full_name
+HAVING AVG(mark)>4.5
+	   AND full_name NOT IN (SELECT full_name -- подзапрос выводит ФИО, у которых есть двойка за последний календарный год
+					     FROM names
+					    WHERE EXTRACT (year from date) = EXTRACT(year from CURRENT_DATE)  -- условие последнего календарного года
+					   		  AND mark = '2'
+		   				)

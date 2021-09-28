@@ -1,0 +1,13 @@
+
+SELECT COUNT(id_book)
+  FROM (SELECT id_book -- подзапрос, выводящий id_book, где автор ТОлстой и название 'Война и мир'
+		  FROM books
+		 WHERE name = 'Война и мир'  -- условие 1
+		   AND author LIKE '%Толстой%'  -- условие 2
+	   ) as subquery
+	   JOIN copies c ON                      
+	   c.id_book = subquery.id_book                   -- соединяем подзапрос subquery с copies и с delievery
+	   JOIN  delievery  d 
+	   ON d.id_copy=c.copy
+ WHERE date_return IS NULL                        -- условие к полученным данным насчёт нахождения книги в библиотеке
+ 	   AND date_out IS NOT NULL
